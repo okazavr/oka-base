@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>yourname // sec</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #0D0D0B;
+      --bg2:         #131310;
+      --bg3:         #1A1A16;
+      --border:      #252520;
+      --amber:       #C87A10;
+      --amber-bright:#E8920A;
+      --amber-dim:   #6A4008;
+      --amber-glow:  rgba(200,122,16,0.07);
+      --green:       #4A8A28;
+      --green-bright:#6AAA3A;
+      --text:        #A8A090;
+      --text-dim:    #4A4840;
+      --text-bright: #D8D0B8;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 300;
+      font-size: 0.84rem;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    /* scanlines */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    #matrix-canvas {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      opacity: 0.028;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 56px 28px 120px;
+    }
+
+    /* ── topbar ── */
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 48px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+    .topbar-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--amber-bright);
+      box-shadow: 0 0 8px var(--amber-bright);
+      flex-shrink: 0;
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+    .topbar-user { color: var(--green-bright); }
+    .topbar-path { color: var(--amber); }
+
+    .blink {
+      display: inline-block;
+      width: 6px; height: 12px;
+      background: var(--amber-bright);
+      vertical-align: middle;
+      animation: blink 1s step-end infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+    /* ── header ── */
+    .header { margin-bottom: 44px; }
+
+    .prompt-line {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+    .prompt-line .p-user { color: var(--green-bright); }
+    .prompt-line .p-path { color: var(--amber); }
+    .prompt-line .p-cmd  { color: var(--text-bright); }
+
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: var(--text-bright);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+      margin-bottom: 4px;
+    }
+
+    .oneliner {
+      font-size: 0.78rem;
+      color: var(--text-dim);
+    }
+    .oneliner .hl { color: var(--amber); }
+
+    /* ── bio block ── */
+    .bio {
+      position: relative;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--amber);
+      padding: 16px 20px;
+      margin-bottom: 48px;
+      color: var(--text);
+      font-size: 0.82rem;
+    }
+    .bio-tag {
+      position: absolute;
+      top: -9px; left: 14px;
+      background: var(--bg2);
+      padding: 0 8px;
+      font-size: 0.62rem;
+      color: var(--amber);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* ── section ── */
+    .section { margin-bottom: 44px; }
+
+    .sec-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .sec-head h2 {
+      font-size: 0.68rem;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--amber);
+      white-space: nowrap;
+    }
+    .sec-head::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ── projects ── */
+    .project {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .project:first-of-type { border-top: 1px solid var(--border); }
+
+    .project-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 12px;
+    }
+    .project-name a {
+      color: var(--text-bright);
+      text-decoration: none;
+      font-weight: 400;
+      transition: color 0.15s;
+    }
+    .project-name a::before { content: '$ '; color: var(--amber-dim); }
+    .project-name a:hover { color: var(--amber-bright); }
+
+    .project-tag {
+      font-size: 0.62rem;
+      color: var(--amber-dim);
+      border: 1px solid var(--amber-dim);
+      padding: 1px 7px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .project-desc {
+      font-size: 0.76rem;
+      color: var(--text-dim);
+      margin-top: 3px;
+    }
+    .project-desc::before { content: '# '; color: var(--border); }
+
+    /* ── writeups ── */
+    .writeup {
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 16px;
+      align-items: baseline;
+      transition: padding-left 0.2s;
+    }
+    .writeup:first-of-type { border-top: 1px solid var(--border); }
+    .writeup:hover { padding-left: 6px; }
+
+    .writeup-date {
+      color: var(--text-dim);
+      font-size: 0.68rem;
+      white-space: nowrap;
+      min-width: 76px;
+    }
+    .writeup-title a {
+      color: var(--text-bright);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .writeup-title a:hover { color: var(--amber-bright); }
+
+    .writeup-cat {
+      font-size: 0.62rem;
+      color: var(--green-bright);
+      white-space: nowrap;
+      margin-left: auto;
+    }
+
+    /* ── links ── */
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+    }
+    .links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 0.76rem;
+      padding: 7px 16px;
+      border: 1px solid var(--border);
+      margin: 0 -1px -1px 0;
+      transition: all 0.15s;
+      letter-spacing: 0.05em;
+    }
+    .links a:hover {
+      color: var(--amber-bright);
+      border-color: var(--amber);
+      background: var(--amber-glow);
+      position: relative; z-index: 1;
+    }
+
+    /* ── footer ── */
+    .footer {
+      margin-top: 64px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .footer-ok { color: var(--green-bright); }
+    .footer-ok::before { content: '[OK] '; }
+
+    @media (max-width: 560px) {
+      .writeup { flex-wrap: wrap; gap: 4px; }
+      .writeup-cat { margin-left: 0; }
+      .project-top { flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="matrix-canvas"></canvas>
+
+<div class="container">
+
+  <div class="topbar">
+    <div class="topbar-dot"></div>
+    <span class="topbar-user">you</span>
+    <span style="color:var(--border)">@</span>
+    <span>machine</span>
+    <span style="color:var(--border)">:</span>
+    <span class="topbar-path">~/site</span>
+    <span style="margin-left:auto"><span class="blink"></span></span>
+  </div>
+
+  <div class="header">
+    <div class="prompt-line">
+      <span class="p-user">you@machine</span>:<span class="p-path">~/site</span>$ <span class="p-cmd">whoami</span>
+    </div>
+    <h1>Your Name</h1>
+    <div class="oneliner">security researcher · <span class="hl">breaking things</span> · occasionally fixing them</div>
+  </div>
+
+  <div class="bio">
+    <div class="bio-tag">about</div>
+    I'm a cybersecurity person based in [City]. I do [pentesting / CTFs / research — fill this in].
+    This site is where I post writeups, track what I'm building, and exist on the internet without a LinkedIn.
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>projects</h2></div>
+
+    <div class="project">
+      <div class="project-top">
+        <div class="project-name"><a href="#">project-one</a></div>
+        <div class="project-tag">tool</div>
+      </div>
+      <div class="project-desc">short description of what it does and why it exists</div>
+    </div>
+
+    <div class="project">
+      <div class="project-top">
+        <div class="project-name"><a href="#">project-two</a></div>
+        <div class="project-tag">research</div>
+      </div>
+      <div class="project-desc">short description of what it does and why it exists</div>
+    </div>
+
+    <div class="project">
+      <div class="project-top">
+        <div class="project-name"><a href="#">project-three</a></div>
+        <div class="project-tag">ctf</div>
+      </div>
+      <div class="project-desc">short description of what it does and why it exists</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>writeups</h2></div>
+
+    <div class="writeup">
+      <span class="writeup-date">2026-03-01</span>
+      <span class="writeup-title"><a href="#">HTB — machine name walkthrough</a></span>
+      <span class="writeup-cat">htb</span>
+    </div>
+    <div class="writeup">
+      <span class="writeup-date">2026-01-14</span>
+      <span class="writeup-title"><a href="#">CVE-XXXX-XXXX — analysis and PoC</a></span>
+      <span class="writeup-cat">vuln</span>
+    </div>
+    <div class="writeup">
+      <span class="writeup-date">2025-11-08</span>
+      <span class="writeup-title"><a href="#">CTF name — challenge name</a></span>
+      <span class="writeup-cat">ctf</span>
+    </div>
+    <div class="writeup">
+      <span class="writeup-date">2025-09-22</span>
+      <span class="writeup-title"><a href="#">notes on a thing i found</a></span>
+      <span class="writeup-cat">misc</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>find me</h2></div>
+    <div class="links">
+      <a href="#">github</a>
+      <a href="#">twitter</a>
+      <a href="#">email</a>
+      <a href="#">linkedin</a>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="footer-ok">system nominal</span>
+    <span>last updated: 2026-03-03</span>
+  </div>
+
+</div>
+
+<script>
+  const canvas = document.getElementById('matrix-canvas');
+  const ctx = canvas.getContext('2d');
+  let cols, drops;
+  const chars = 'アイウエオカキクケコサシスセソ0123456789ABCDEF@#$%><|\\';
+
+  function init() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+    cols  = Math.floor(canvas.width / 18);
+    drops = Array(cols).fill(1);
+  }
+
+  function draw() {
+    ctx.fillStyle = 'rgba(13,13,11,0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#C87A10';
+    ctx.font = '13px monospace';
+    drops.forEach((y, i) => {
+      const ch = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(ch, i * 18, y * 18);
+      if (y * 18 > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    });
+  }
+
+  init();
+  window.addEventListener('resize', init);
+  setInterval(draw, 60);
+</script>
+
+</body>
+</html>
