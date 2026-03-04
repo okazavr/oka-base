@@ -17,9 +17,9 @@
       --amber-glow:  rgba(200,122,16,0.07);
       --green:       #4A8A28;
       --green-bright:#6AAA3A;
-      --text:        #A8A090;
-      --text-dim:    #4A4840;
-      --text-bright: #D8D0B8;
+      --text:        #C8C0A8;
+      --text-dim:    #7A7468;
+      --text-bright: #F0E8D0;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -47,13 +47,7 @@
       z-index: 999;
     }
 
-    #matrix-canvas {
-      position: fixed; inset: 0;
-      width: 100%; height: 100%;
-      opacity: 0.028;
-      pointer-events: none;
-      z-index: 0;
-    }
+
 
     .container {
       position: relative;
@@ -86,15 +80,6 @@
 
     .topbar-user { color: var(--green-bright); }
     .topbar-path { color: var(--amber); }
-
-    .blink {
-      display: inline-block;
-      width: 6px; height: 12px;
-      background: var(--amber-bright);
-      vertical-align: middle;
-      animation: blink 1s step-end infinite;
-    }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
 
     /* ── header ── */
     .header { margin-bottom: 44px; }
@@ -284,32 +269,26 @@
 </head>
 <body>
 
-<canvas id="matrix-canvas"></canvas>
-
 <div class="container">
 
   <div class="topbar">
     <div class="topbar-dot"></div>
-    <span class="topbar-user">you</span>
-    <span style="color:var(--border)">@</span>
-    <span>machine</span>
-    <span style="color:var(--border)">:</span>
-    <span class="topbar-path">~/site</span>
-    <span style="margin-left:auto"><span class="blink"></span></span>
+    <span class="topbar-user">okazavr</span>
+    <span style="color:var(--text-dim)">:</span>
+    <span class="topbar-path">oka-base</span>
   </div>
 
   <div class="header">
     <div class="prompt-line">
-      <span class="p-user">you@machine</span>:<span class="p-path">~/site</span>$ <span class="p-cmd">whoami</span>
+      <span class="p-user">oka@machine</span>:<span class="p-path">~/oka-base/index</span>$ <span class="p-cmd">whoami</span>
     </div>
-    <h1>Your Name</h1>
-    <div class="oneliner">security researcher · <span class="hl">breaking things</span> · occasionally fixing them</div>
+    <h1>Ogtay</h1>
+    <div class="oneliner">research · <span class="hl">cybersec</span> · music</div>
   </div>
 
   <div class="bio">
     <div class="bio-tag">about</div>
-    I'm a cybersecurity person based in [City]. I do [pentesting / CTFs / research — fill this in].
-    This site is where I post writeups, track what I'm building, and exist on the internet without a LinkedIn.
+    Personal website is for keeping track of projects, writeups and things I am working on, with some personal stuff as a nice bonus.
   </div>
 
   <div class="section">
@@ -317,26 +296,10 @@
 
     <div class="project">
       <div class="project-top">
-        <div class="project-name"><a href="#">project-one</a></div>
-        <div class="project-tag">tool</div>
+        <div class="project-name"><a href="#">projectname</a></div>
+        <div class="project-tag">tag</div>
       </div>
-      <div class="project-desc">short description of what it does and why it exists</div>
-    </div>
-
-    <div class="project">
-      <div class="project-top">
-        <div class="project-name"><a href="#">project-two</a></div>
-        <div class="project-tag">research</div>
-      </div>
-      <div class="project-desc">short description of what it does and why it exists</div>
-    </div>
-
-    <div class="project">
-      <div class="project-top">
-        <div class="project-name"><a href="#">project-three</a></div>
-        <div class="project-tag">ctf</div>
-      </div>
-      <div class="project-desc">short description of what it does and why it exists</div>
+      <div class="project-desc">description</div>
     </div>
   </div>
 
@@ -344,74 +307,43 @@
     <div class="sec-head"><h2>writeups</h2></div>
 
     <div class="writeup">
-      <span class="writeup-date">2026-03-01</span>
-      <span class="writeup-title"><a href="#">HTB — machine name walkthrough</a></span>
-      <span class="writeup-cat">htb</span>
-    </div>
-    <div class="writeup">
-      <span class="writeup-date">2026-01-14</span>
-      <span class="writeup-title"><a href="#">CVE-XXXX-XXXX — analysis and PoC</a></span>
-      <span class="writeup-cat">vuln</span>
-    </div>
-    <div class="writeup">
-      <span class="writeup-date">2025-11-08</span>
-      <span class="writeup-title"><a href="#">CTF name — challenge name</a></span>
-      <span class="writeup-cat">ctf</span>
-    </div>
-    <div class="writeup">
-      <span class="writeup-date">2025-09-22</span>
-      <span class="writeup-title"><a href="#">notes on a thing i found</a></span>
-      <span class="writeup-cat">misc</span>
+      <span class="writeup-date">21-02-2026</span>
+      <span class="writeup-title"><a href="writeups/WTCTF26_Navigation_Nightmare.html">Navigation Nightmare</a></span>
+      <span class="writeup-cat">web</span>
     </div>
   </div>
 
   <div class="section">
-    <div class="sec-head"><h2>find me</h2></div>
+    <div class="sec-head"><h2>blog</h2></div>
+
+    <div class="writeup">
+      <span class="writeup-date">04-03-2026</span>
+      <span class="writeup-title"><a href="#">post</a></span>
+      <span class="writeup-cat">tag</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head" style="margin-bottom: 36px;"><h2>find me</h2></div>
+
     <div class="links">
       <a href="#">github</a>
-      <a href="#">twitter</a>
       <a href="#">email</a>
       <a href="#">linkedin</a>
+      <a href="#">instagram</a>
+      <a href="#">letterboxd</a>
+      <a href="#">spotify</a>
     </div>
   </div>
 
   <div class="footer">
-    <span class="footer-ok">system nominal</span>
-    <span>last updated: 2026-03-03</span>
+    <span class="footer-ok">all systems operational</span>
+    <span><a href="#" style="color:var(--text-dim);text-decoration:none;border-bottom:1px solid var(--border)">coming soon →</a></span>
   </div>
 
 </div>
 
-<script>
-  const canvas = document.getElementById('matrix-canvas');
-  const ctx = canvas.getContext('2d');
-  let cols, drops;
-  const chars = 'アイウエオカキクケコサシスセソ0123456789ABCDEF@#$%><|\\';
 
-  function init() {
-    canvas.width  = window.innerWidth;
-    canvas.height = window.innerHeight;
-    cols  = Math.floor(canvas.width / 18);
-    drops = Array(cols).fill(1);
-  }
-
-  function draw() {
-    ctx.fillStyle = 'rgba(13,13,11,0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#C87A10';
-    ctx.font = '13px monospace';
-    drops.forEach((y, i) => {
-      const ch = chars[Math.floor(Math.random() * chars.length)];
-      ctx.fillText(ch, i * 18, y * 18);
-      if (y * 18 > canvas.height && Math.random() > 0.975) drops[i] = 0;
-      drops[i]++;
-    });
-  }
-
-  init();
-  window.addEventListener('resize', init);
-  setInterval(draw, 60);
-</script>
 
 </body>
 </html>
